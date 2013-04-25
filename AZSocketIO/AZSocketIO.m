@@ -31,6 +31,7 @@
 @property(nonatomic, strong, readwrite)NSString *host;
 @property(nonatomic, strong, readwrite)NSString *port;
 @property(nonatomic, assign, readwrite)BOOL secureConnections;
+@property(nonatomic)NSDictionary *params;
 
 @property(nonatomic, strong)NSOperationQueue *queue;
 
@@ -59,12 +60,21 @@
 @implementation AZSocketIO
 - (id)initWithHost:(NSString *)host andPort:(NSString *)port secure:(BOOL)secureConnections
 {
+	return [self initWithHost:host
+										andPort:port
+										 secure:secureConnections
+								 withParams:nil];
+}
+
+- (id)initWithHost:(NSString *)host andPort:(NSString *)port secure:(BOOL)secureConnections withParams:(NSDictionary *)params
+{
     self = [super init];
     if (self) {
         self.host = host;
         self.port = port;
         self.secureConnections = secureConnections;
-        
+				self.params = params;
+      
         NSString *protocolString = self.secureConnections ? @"https://" : @"http://";
         NSString *urlString = [NSString stringWithFormat:@"%@%@:%@", protocolString,
                                self.host, self.port];
@@ -103,7 +113,7 @@
     self.errorBlock = failure;
     NSString *urlString = [NSString stringWithFormat:@"socket.io/%@", PROTOCOL_VERSION];
     [self.httpClient getPath:urlString
-                  parameters:nil
+                  parameters:self.params
                      success:^(AFHTTPRequestOperation *operation, id responseObject) {
                          NSString *response = [[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding];
                          NSArray *msg = [response componentsSeparatedByString:@":"];
